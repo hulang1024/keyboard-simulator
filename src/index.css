@@ -1,0 +1,49 @@
+html,body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  background: #fdf6e3;
+}
+
+.keyboard {
+  display: flex;
+  margin: 40px auto;
+  padding: 8px;
+  max-width: max-content;
+  border-radius: 8px;
+  background: #777;
+  box-shadow: 0px 0px 3px 1px #444;
+  transition: 0.1s color ease-in-out;
+  user-select: none;
+}
+
+.keyboard__key {
+  margin: 2px;
+  padding: 4px;
+  text-align: center;
+  font-size: 14px;
+  color: #eee;
+  border-radius: 8px;
+  background: #111;
+  box-shadow: 0px 0px 2px 0px #000;
+  cursor: pointer;
+}
+
+.keyboard__key.state-keydown {
+  color: dodgerblue;
+  text-shadow: 0px 0px 3px dodgerblue;
+  box-shadow: inset 0px 0px 2px 0px #000;
+}
+
+.editor__container {
+  margin: 0 auto;
+  width: 800px;
+  height: 200px;
+  border: 1px solid;
+  border-radius: 1px;
+  background: #222;
+  color: #f2f2f2;
+  font-size: 18px;
+  letter-spacing: 1px;
+  padding: 8px;
+}
