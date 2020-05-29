@@ -204,7 +204,7 @@ export default class Keyboard {
                 K('Delete',46), K('End',35), K('PgDn',34),
               ]
             }),
-            Padding({top: 50}),
+            Padding({top: 54}),
             Row({
               style: {
                 justifyContent: 'center'
@@ -283,7 +283,6 @@ export default class Keyboard {
                 }),
               ]
             }),
-
           ]
         })
       ]
@@ -323,5 +322,4 @@ export default class Keyboard {
     keyEvent.key = key;
     this.onKey(keyEvent);
   }
-
 }
