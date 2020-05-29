@@ -1,30 +1,3 @@
-class DrawableKey {
-  constructor(spec) {
-    this.keyCode = spec.keyCode;
-    let el = document.createElement('div');
-    this.el = el;
-    el.classList.add('keyboard__key');
-  }
-}
-
-class InputKeyEvent {
-  static fromRawKeyboardEvent(event) {
-    let keyEvent = new InputKeyEvent();
-    // 原始事件里, key存储存储实际产生的键值（例如[!]，是按下shift+数字1)，keyCode是一个数字，标识物理按键
-    // 自定义事件里，keyCode是数字有可能是字符串
-    const keyCode = ['Shift', 'Alt', 'Control', 'Meta', 'Enter'].includes(event.key)
-      ? event.code
-      : event.keyCode;
-    keyEvent.type = event.type;
-    keyEvent.key = event.key;
-    keyEvent.keyCode = keyCode;
-    keyEvent.altKey = event.altKey;
-    keyEvent.ctrlKey = event.ctrlKey;
-    keyEvent.shiftKey = event.shiftKey;
-    keyEvent.metaKey = event.metaKey;
-    return keyEvent;
-  }
-}
 
 export default class Keyboard {
   constructor() {
@@ -32,6 +5,7 @@ export default class Keyboard {
     el.classList.add('keyboard');
     this.el = el;
 
+    this.locked = false;
     this.realFunctionEnabled = false;
 
     document.addEventListener('keydown', (event) => {
@@ -60,22 +34,39 @@ export default class Keyboard {
 
     this.drawableKeyMap = {};
 
-    const K = (text, keyCode, width, height) => {
+    const K = (text, keyCode, width, height, align) => {
       let key = new DrawableKey({keyCode});
-      key.el.style.width = (width || 42) + 'px';
-      key.el.style.height = (height || 42) + 'px';
-      key.el.classList.add('align-top');
-      key.el.innerText = text;
-      key.el.onmousedown = () => {
-        alert('暂不支持鼠标');
+      let style = key.el.style;
+      height = height || 40;
+      style.width = (width || 40) + 'px';
+      style.height = height + 'px';
+
+      if (align) {
+        key.el.classList.add('align-' + align);
+      }
+
+      let keys = text.split('\n');
+      if (keys.length == 1) {
+        key.el.innerText = text;
+      } else {
+        key.el.classList.add('align-' + 'rows-evenly');
+        keys.forEach(k => {
+          let el = document.createElement('div');
+          el.innerText = k;
+          key.el.appendChild(el);
+        });
+      }
+      key.el.onmousedown = (event) => {
+        this.onMouseEvent(key, event);
       };
       key.el.onmouseup = () => {
-        alert('暂不支持鼠标');
+        this.onMouseEvent(key, event);
       };
       this.drawableKeyMap[keyCode] = key;
       
       return key.el;
     };
+    const LK = (text, keyCode) => K(text, keyCode, 0, 0, 'center');
     const Row = (props) => {
       let div = document.createElement('div');
       div.classList.add('row');
@@ -106,12 +97,23 @@ export default class Keyboard {
     
     const StatusLED = (on) => {
       let div = document.createElement('div');
+      div.classList.add('status-led');
       div.style.width = 10 + 'px';
-      div.style.height = 20 + 'px';
-      div.style.borderRadius = 30 + 'px';
-      div.style.background = on ? 'dodgerblue' : '#aaa';
+      div.style.height = 10 + 'px';
+      div.style.borderRadius = '100%';
+      div.style.transition = '.1s background,box-shadow ease-in-out'
+      div.turnOn = () => {
+        div.style.boxShadow = 'lawngreen 0px 0px 4px 1px';
+        div.style.background = 'lawngreen';
+      };
+      div.turnOff = () => {
+        div.style.boxShadow = 'none';
+        div.style.background = '#333';
+      };
       if (on) {
-        div.style.boxShadow = 'dodgerblue 0px 0px 4px 1px';
+        div.turnOn();
+      } else {
+        div.turnOff();
       }
       return div;
     };
@@ -119,9 +121,13 @@ export default class Keyboard {
       let div = document.createElement('div');
       div.style.display = 'flex';
       div.style.justifyContent = 'space-evenly';
+      div.style.alignItems = 'center';
       div.style.height = 50 + 'px';
       div.style.padding = '2px 50px';
-      [StatusLED(true), StatusLED(false), StatusLED(false)].forEach((item) => {
+      
+      let inputStatusLED = StatusLED(false);
+      this.inputStatusLED = inputStatusLED;
+      [StatusLED(false), StatusLED(false), inputStatusLED].forEach((item) => {
         div.appendChild(item);
       });
       return div;
@@ -149,35 +155,37 @@ export default class Keyboard {
               children: [
                 K('~\n`',192), K('!\n1',49), K('@\n2',50), K('#\n3',51), K('$\n4',52),
                 K('%\n5',53), K('^\n6',54), K('&\n7',55), K('*\n8',56), K('(\n9',57),
-                K(')\n0',48), K('─\n-',189), K('+\n=',187), K('Back Space',8,92),
+                K(')\n0',48), K('─\n-',189), K('+\n=',187), K('Back Space',8,90),
               ]
             }),
             Row({
               children: [
-                K('Tab',9,50+8),
-                K('Q',81), K('W',87), K('E',69), K('R',82), K('T',84), K('Y',89), K('U',85), K('I',73), K('O',79), K('P',80),
-                K('{\n[',219), K('}\n]',221),K('|\n\\',220,50+26),
+                K('Tab',9,58),
+                LK('Q',81), LK('W',87), LK('E',69), LK('R',82), LK('T',84),
+                LK('Y',89), LK('U',85), LK('I',73), LK('O',79), LK('P',80),
+                K('{\n[',219), K('}\n]',221),K('|\n\\',220,72),
               ]
             }),
             Row({
               children: [
-                K('Caps Lock',20,50+32),
-                K('A',65), K('S',83), K('D',68), K('F',70), K('G',71), K('H',72), K('J',74), K('K',75), K('L',76),
-                K(':\n;',186), K('"\n,',222), K('Enter','Enter',50+56),
+                K('Caps Lock',20,82),
+                LK('A',65), LK('S',83), LK('D',68), LK('F',70), LK('G',71), LK('H',72),
+                LK('J',74), LK('K',75), LK('L',76),
+                K(':\n;',186), K('"\n,',222), K('Enter','Enter',104),
               ]
             }),
             Row({
               children: [
                 K('Shift','ShiftLeft',50+56),
-                K('Z',90), K('X',88), K('C',67), K('V',86), K('B',66), K('N',78), K('M',77),
+                LK('Z',90), LK('X',88), LK('C',67), LK('V',86), LK('B',66), LK('N',78), LK('M',77),
                 K('<\n,',188), K('>\n.',190), K('?\n/',191),
                 K('Shift','ShiftRight',50+86),
               ]
             }),
             Row({
               children: [
-                K('Ctrl','ControlLeft',60), K('Win','MetaLeft',60), K('Alt','AltLeft',60), K('',32,290),
-                K('Alt','AltRight',60), K('Win','MetaRight',60), K('Menu',93,60), K('Ctrl','ControlRight',60),
+                K('Ctrl','ControlLeft',58), K('Meta','MetaLeft',60), K('Alt','AltLeft',60), K('',32,290),
+                K('Alt','AltRight',60), K('Meta','MetaRight',60), K('Menu',93,60), K('Ctrl','ControlRight',58),
               ]
             }),
           ]
@@ -297,6 +305,7 @@ export default class Keyboard {
   }
 
   onRawKeyboardEvent(event) {
+    if (this.locked) return;
     this.onKey(InputKeyEvent.fromRawKeyboardEvent(event));
   }
 
@@ -305,15 +314,43 @@ export default class Keyboard {
     const key = this.drawableKeyMap[event.keyCode];
     if (!key) return;
     if (event.type == 'keydown') {
+      this.inputStatusLED.turnOn();
       key.el.classList.add('state-keydown');
+      if (event.key == 'CapsLock' && navigator.platform == 'MacIntel') {
+        setTimeout(() => {
+          key.el.classList.remove('state-keydown');
+        }, 100);  
+      }
     } else {
       key.el.classList.remove('state-keydown');
+      this.inputStatusLED.turnOff();
     }
     this.signals[event.type].forEach((handler) => {
       handler(event);
     });
   }
 
+  onMouseEvent(drawableKey, event) {
+    if (this.locked) return;
+    let keyCode = drawableKey.keyCode;
+    let keyEvent = new InputKeyEvent();
+    keyEvent.type = {mousedown: 'keydown', mouseup: 'keyup'}[event.type];
+    keyEvent.keyCode = keyCode;
+    let key = '';
+    if (Number.isInteger(keyCode)) {
+      if (48 <= keyCode && keyCode <= 57) {
+        key = (keyCode - 48);
+      } else if (65 <= keyCode && keyCode <= 90) {
+        key = String.fromCharCode(keyCode).toLowerCase();
+      } else if (112 <= keyCode && keyCode <= 123) {
+        key = 'F' + (keyCode - 112 + 1);
+      }
+    } else {
+      key = keyCode;
+    }
+    keyEvent.key = key;
+    this.onKey(keyEvent);
+  }
 
   press(keyCode, key, type) {
     let keyEvent = new InputKeyEvent();
@@ -321,5 +358,33 @@ export default class Keyboard {
     keyEvent.keyCode = keyCode;
     keyEvent.key = key;
     this.onKey(keyEvent);
+  }
+}
+
+class DrawableKey {
+  constructor(spec) {
+    this.keyCode = spec.keyCode;
+    let el = document.createElement('div');
+    this.el = el;
+    el.classList.add('keyboard__key');
+  }
+}
+
+class InputKeyEvent {
+  static fromRawKeyboardEvent(event) {
+    let keyEvent = new InputKeyEvent();
+    // 原始事件里, key存储实际产生的键值（例如[!]，是按下shift+数字1)，keyCode是一个数字，标识物理按键
+    // 自定义事件里，keyCode是数字有可能是字符串
+    const keyCode = ['Shift', 'Alt', 'Control', 'Meta', 'Enter'].includes(event.key)
+      ? event.code
+      : event.keyCode;
+    keyEvent.type = event.type;
+    keyEvent.key = event.key;
+    keyEvent.keyCode = keyCode;
+    keyEvent.altKey = event.altKey;
+    keyEvent.ctrlKey = event.ctrlKey;
+    keyEvent.shiftKey = event.shiftKey;
+    keyEvent.metaKey = event.metaKey;
+    return keyEvent;
   }
 }

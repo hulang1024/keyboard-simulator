@@ -1,6 +1,9 @@
 
 export default class Replayer {
   constructor(keyboard) {
+    this.keyboard = keyboard;
+    this.playing = false;
+
     let button = document.createElement('button');
     button.innerText = '观看回放';
     button.onclick = () => {
@@ -12,9 +15,6 @@ export default class Replayer {
     }
     this.playButton = button;
     this.el = button;
-
-    this.keyboard = keyboard;
-    this.playing = false;
   }
 
   play() {
@@ -54,13 +54,16 @@ export default class Replayer {
     cancelAnimationFrame(this.timer);
     this.playing = false;
     this.playButton.disabled = false;
+    this.keyboard.locked = false;
   }
 
   _onStart() {
     this.playButton.disabled = true;
+    this.keyboard.locked = true;
   }
 
   _onEnd() {
     this.playButton.disabled = false;
+    this.keyboard.locked = false;
   }
 }
