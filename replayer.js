@@ -5,6 +5,7 @@ export default class Replayer {
     this.playing = false;
 
     let button = document.createElement('button');
+    button.style.margin = '0px 8px';
     button.innerText = '观看回放';
     button.onclick = () => {
       editor.clear();

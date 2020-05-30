@@ -13,6 +13,7 @@ export default class Recorder {
     this.started = false;
 
     let recordButton = document.createElement('button');
+    recordButton.style.margin = '0px 8px';
     recordButton.innerText = '开始录像';
     recordButton.onclick = () => {
       if (this.started) {

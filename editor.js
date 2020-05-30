@@ -8,7 +8,7 @@ export default class Editor {
   }
 
   clear() {
-    this.el.innerText = '';
+    this.el.innerText = '_';
   }
 
   onKeyDown(event) {
@@ -18,12 +18,14 @@ export default class Editor {
     }
     let el = this.el;
     if (char) {
-      el.innerText = el.innerText + char;
+      el.innerText += char;
     } else {
       switch (event.key) {
         case 'Backspace':
           el.innerText = el.innerText.slice(0, el.innerText.length - 1);
           break;
+        case 'Enter':
+          el.innerText += '\n';
       }
     }
   }
