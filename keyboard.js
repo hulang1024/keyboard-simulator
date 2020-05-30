@@ -202,7 +202,7 @@ export default class Keyboard {
                     }),
                     Col({
                       children: [
-                        K('+',107,null,50*2-4)
+                        K('+',107,null,102)
                       ]
                     }),
                   ]
@@ -218,14 +218,14 @@ export default class Keyboard {
                         }),
                         Row({
                           children: [
-                            K('0\nIns',96,50*2-4), K('.\nDel',110),
+                            K('0\nIns',96,102), K('.\nDel',110),
                           ]
                         }),
                       ]
                     }),
                     Col({
                       children: [
-                        K('Enter','NumpadEnter',null,50*2-4)
+                        K('Enter','NumpadEnter',null,102)
                       ]
                     }),
                   ]
